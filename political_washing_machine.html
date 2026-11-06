@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BJP Washing Machine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+
+        /* Washing Machine Styles */
+        .machine-body {
+            width: 260px;
+            height: 360px;
+            background: #ffffff;
+            border-radius: 24px;
+            box-shadow: 
+                inset -5px -5px 15px rgba(0,0,0,0.05),
+                10px 15px 25px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 2px solid #e2e8f0;
+            margin: 0 auto;
+            overflow: hidden;
+        }
+
+        .control-panel {
+            width: 100%;
+            height: 50px;
+            background: #1e293b;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            border-bottom: 4px solid #cbd5e1;
+        }
+
+        .knob {
+            width: 30px;
+            height: 30px;
+            background: #cbd5e1;
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            border: 2px solid #94a3b8;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        .knob::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 13px;
+            width: 4px;
+            height: 10px;
+            background: #475569;
+            border-radius: 2px;
+        }
+
+        .led-display {
+            background: #020617;
+            color: #10b981;
+            font-family: monospace;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .led-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ef4444; /* Default red */
+            box-shadow: 0 0 5px #ef4444;
+            transition: all 0.3s ease;
+        }
+
+        .led-indicator.ready {
+            background-color: #f59e0b;
+            box-shadow: 0 0 5px #f59e0b;
+        }
+
+        .led-indicator.active {
+            background-color: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .detergent-drawer {
+            width: 60px;
+            height: 20px;
+            background: #334155;
+            border-radius: 4px;
+        }
+
+        .door {
+            width: 190px;
+            height: 190px;
+            background: #f8fafc;
+            border-radius: 50%;
+            margin-top: 25px;
+            border: 12px solid #cbd5e1;
+            box-shadow: 
+                inset 5px 5px 15px rgba(0,0,0,0.2),
+                5px 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .door-glass {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            box-shadow: inset 10px 10px 20px rgba(255,255,255,0.5);
+            z-index: 10;
+        }
+
+        .drum {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: repeating-linear-gradient(
+                45deg,
+                #e2e8f0,
+                #e2e8f0 10px,
+                #cbd5e1 10px,
+                #cbd5e1 20px
+            );
+            position: absolute;
+            transition: all 0.5s ease;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .water {
+            position: absolute;
+            bottom: -100%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: rgba(56, 189, 248, 0.6);
+            border-radius: 40%;
+            transition: bottom 1s ease-in-out;
+            z-index: 2;
+        }
+
+        .neta-inside {
+            font-size: 24px;
+            font-weight: bold;
+            color: #334155;
+            z-index: 5;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            background: white;
+            padding: 5px 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        /* Animations */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes wave {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes bubble {
+            0% { transform: translateY(0) scale(1); opacity: 0.8; }
+            100% { transform: translateY(-100px) scale(1.5); opacity: 0; }
+        }
+
+        .is-washing .drum {
+            animation: spin 0.8s linear infinite;
+        }
+
+        .is-washing .water {
+            bottom: -20%;
+            animation: wave 3s linear infinite;
+        }
+
+        .is-washing .knob {
+            transform: rotate(180deg);
+        }
+
+        .is-washing .neta-inside {
+            animation: spin 1s linear infinite reverse; /* Keep text somewhat upright */
+        }
+
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            z-index: 3;
+            display: none;
+        }
+
+        .is-washing .bubble {
+            display: block;
+            animation: bubble 2s infinite ease-in;
+        }
+
+        /* Custom Scrollbar for list */
+        .neta-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        .neta-list::-webkit-scrollbar-track {
+            background: #f1f5f9;
+            border-radius: 4px;
+        }
+        .neta-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+
+        .selected-card {
+            border-color: #f97316 !important;
+            background-color: #fff7ed !important;
+        }
+
+        .sparkle-bg {
+            background-image: radial-gradient(#fbbf24 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+        
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+
+        #toast {
+            position: fixed;
+            bottom: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.9);
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: bottom 0.3s ease;
+            z-index: 100;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        #toast.show {
+            bottom: 20px;
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-800 pb-20">
+
+    <header class="bg-gradient-to-r from-orange-500 to-green-600 text-white py-4 px-4 shadow-md relative overflow-hidden">
+        <button id="share-app-btn" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition-colors z-20" title="Share App">
+            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-5.368m0 5.368l5.662 3.775a3 3 0 10.513-4.521m-6.175-1.921l5.662-3.775a3 3 0 10-.513-4.521"></path></svg>
+        </button>
+        <div class="max-w-md mx-auto relative z-10 text-center px-6">
+            <h1 class="text-2xl font-extrabold tracking-tight">The BJP Washing Machine</h1>
+            <p class="text-slate-100 mt-1 text-[13px] leading-tight">Select a leader, add "BJP Detergent", and watch the ED/CBI stains vanish.</p>
+        </div>
+        <!-- Decorative bubbles in header -->
+        <div class="absolute top-0 right-10 w-20 h-20 bg-white opacity-5 rounded-full"></div>
+        <div class="absolute bottom-[-10px] right-32 w-12 h-12 bg-white opacity-10 rounded-full"></div>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 pb-4 flex flex-col gap-4 mt-3">
+        
+        <!-- The Machine -->
+        <div class="w-full flex flex-col gap-3">
+            
+            <!-- Washing Machine UI -->
+            <div class="bg-white py-5 px-4 rounded-3xl shadow-xl border border-slate-200 flex flex-col items-center">
+                <div class="machine-body" id="washing-machine">
+                    <div class="control-panel">
+                        <div class="detergent-drawer flex justify-center items-center text-xs text-slate-400 font-bold">BJP</div>
+                        <div class="led-display" id="machine-status">IDLE</div>
+                        <div class="flex items-center gap-3">
+                            <div class="led-indicator" id="status-led"></div>
+                            <div class="knob" id="machine-knob"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="door">
+                        <div class="drum">
+                            <div class="neta-inside" id="neta-in-drum">?</div>
+                        </div>
+                        <div class="water"></div>
+                        <!-- Bubbles -->
+                    <div class="bubble w-4 h-4 left-1/4 bottom-10" style="animation-delay: 0s;"></div>
+                    <div class="bubble w-6 h-6 left-1/2 bottom-5" style="animation-delay: 0.5s;"></div>
+                    <div class="bubble w-3 h-3 right-1/4 bottom-15" style="animation-delay: 1s;"></div>
+                    <div class="door-glass"></div>
+                </div>
+                
+                <!-- CTA Button moved inside the machine -->
+                <button id="main-btn" class="w-[85%] mt-auto mb-5 bg-orange-500 hover:bg-orange-600 text-white text-sm md:text-base font-bold py-2.5 px-4 rounded-xl transition-all shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] transform hover:-translate-y-0.5 flex items-center justify-center gap-2 z-10">
+                    <span>🧺</span> Select Neta to Wash
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Panel (Hidden initially) -->
+            <div id="results-panel" class="hidden bg-white rounded-2xl shadow-lg border-2 border-green-500 overflow-hidden transform transition-all mt-2">
+                <div class="bg-green-50 p-4 border-b border-green-100 flex justify-between items-center sparkle-bg">
+                    <h3 class="text-lg font-bold text-green-800 flex items-center gap-2">
+                        <span>✨</span> Clean Chit Certificate
+                    </h3>
+                    <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 bg-green-200 text-green-800 rounded-full text-[10px] font-bold uppercase tracking-wider">Verified</span>
+                        <button id="share-result-btn" class="p-1.5 bg-green-600 hover:bg-green-700 text-white rounded-full transition-colors shadow-sm" title="Share Result">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-5.368m0 5.368l5.662 3.775a3 3 0 10.513-4.521m-6.175-1.921l5.662-3.775a3 3 0 10-.513-4.521"></path></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="p-5 space-y-4 relative">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <h4 class="text-2xl font-black text-slate-800" id="res-name">Neta Name</h4>
+                            <p class="text-sm font-semibold text-slate-500 mt-1">Ex-<span id="res-party">Party</span> → Joined BJP/NDA in <span id="res-year">Year</span></p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-3 mt-4">
+                        <div class="bg-red-50 p-3 rounded-xl border border-red-100">
+                            <h5 class="text-[11px] font-bold text-red-800 uppercase mb-1">Original Stains (Charges)</h5>
+                            <p class="text-sm text-red-900" id="res-charges">Scam details...</p>
+                        </div>
+                        <div class="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                            <h5 class="text-[11px] font-bold text-blue-800 uppercase mb-1">Wash Mode Used</h5>
+                            <p class="text-sm font-bold text-blue-900" id="res-mode">Mode</p>
+                        </div>
+                        <div class="bg-green-50 p-3 rounded-xl border border-green-200">
+                            <h5 class="text-[11px] font-bold text-green-800 uppercase mb-1">Post-Wash Result</h5>
+                            <p class="text-sm text-green-900 font-medium" id="res-action">Agencies dropped case...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        
+        <!-- Footer / Citation -->
+        <div class="mt-8 mb-4 text-center px-4">
+            <p class="text-xs text-slate-500 mb-2 leading-relaxed">
+                The data is sourced from a major investigative report published by <a href="https://indianexpress.com/article/express-exclusive/since-2014-25-opposition-leaders-facing-corruption-probe-crossed-over-to-bjp-23-of-them-got-reprieve-9247737/" target="_blank" rel="noopener noreferrer" class="font-bold text-blue-500 hover:underline">The Indian Express</a> in April 2024. Their investigation tracked 25 prominent opposition politicians facing ED and CBI corruption probes who crossed over to the BJP since 2014, revealing that 23 of them subsequently received legal reprieve or saw their cases put in cold storage.
+            </p>
+            <p class="text-sm font-extrabold text-[#d4af37] tracking-widest uppercase mt-3">
+                Truth for Public Good
+            </p>
+        </div>
+    </main>
+
+    <!-- Neta Selection Modal -->
+<div id="neta-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex justify-center items-end md:items-center p-0 md:p-4">
+    <div class="bg-white w-full max-w-md rounded-t-3xl md:rounded-3xl shadow-2xl h-[80vh] md:h-[600px] flex flex-col overflow-hidden animate-slide-up">
+        
+        <!-- Sticky Top Section -->
+        <div class="sticky top-0 z-10 bg-white">
+            <!-- Modal Header -->
+            <div class="bg-slate-50 p-5 border-b border-slate-200 flex justify-between items-center">
+                <div>
+                    <h2 class="text-xl font-bold flex items-center gap-2">
+                        <span>🧺</span> Dirty Laundry Basket
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Select a Neta facing probes to load</p>
+                </div>
+                <button id="close-modal" class="text-slate-400 hover:text-slate-600 bg-slate-200 p-2 rounded-full transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Search Bar -->
+            <div class="px-4 py-3 border-b border-slate-200">
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                    </span>
+                    <input type="text" id="search-neta" placeholder="Search by name, party, or year..." class="w-full pl-9 pr-3 py-2 bg-slate-100 border-transparent rounded-lg text-sm focus:bg-white focus:ring-2 focus:ring-orange-500 focus:border-transparent outline-none transition-all">
+                </div>
+            </div>
+        </div>
+        
+        <!-- List -->
+        <div class="neta-list flex-1 overflow-y-auto p-4 space-y-3" id="neta-list">
+            <!-- Neta cards injected via JS -->
+        </div>
+    </div>
+</div>
+
+<div id="toast">Copied to clipboard!</div>
+
+<script>
+    // Data derived from the investigation
+    const netas = [
+            { id: 1, name: "Ajit Pawar", party: "NCP", year: "2023", cases: "Maharashtra State Cooperative (MSC) Bank scam and irrigation scam probes.", mode: "Heavy Duty Closure Report", action: "The Mumbai Police EOW filed a closure report; ED proceedings subsequently stalled." },
+            { id: 2, name: "Praful Patel", party: "NCP", year: "2023", cases: "Air India–Indian Airlines merger and aircraft leasing scam (CBI/ED).", mode: "Clean Chit Spin Cycle", action: "In March 2024, the CBI filed a closure report giving him a clean chit, citing lack of evidence." },
+            { id: 3, name: "Himanta Biswa Sarma", party: "Congress", year: "2015", cases: "Saradha chit fund scam and Louis Berger Guwahati water supply bribery allegations.", mode: "Permanent Cold Storage Rinse", action: "The CBI conducted no further raids or charge sheets against him; became Assam Chief Minister." },
+            { id: 4, name: "Suvendu Adhikari", party: "TMC", year: "2020", cases: "Narada sting operation tape and Saradha scam scrutiny.", mode: "Pending Sanction Soak", action: "CBI sanction to prosecute remained pending without arrest or trial escalation." },
+            { id: 5, name: "Ashok Chavan", party: "Congress", year: "2024", cases: "Adarsh Housing Society scam (CBI charges).", mode: "Stayed Proceedings Tumble", action: "Active proceedings stayed/stalled; nominated to Rajya Sabha by the BJP." },
+            { id: 6, name: "Chhagan Bhujbal", party: "NCP", year: "2023", cases: "Maharashtra Sadan construction scam and money-laundering probes.", mode: "Deprioritized Delicate Wash", action: "ACB case dropped earlier; ED proceedings deprioritized after joining the NDA cabinet." },
+            { id: 7, name: "Bhavana Gawali", party: "Shiv Sena", year: "2022", cases: "ED money laundering probe over a ₹100 crore trust embezzlement case.", mode: "Ceased Summons Gentle Cycle", action: "Joined the Eknath Shinde Sena-BJP alliance; raids and summons ceased." },
+            { id: 8, name: "Yamini & Yashwant Jadhav", party: "Shiv Sena", year: "2022", cases: "Income Tax and ED investigations into unexplained cash transactions.", mode: "No Coercive Action Rinse", action: "Switched to Shinde faction; no coercive actions pursued thereafter." },
+            { id: 9, name: "Naveen Jindal", party: "Congress", year: "2024", cases: "Coal block allocation scam (Coal-gate) CBI/ED trials.", mode: "Pre-Election Express Wash", action: "Joined BJP right before the 2024 elections and was fielded as a Lok Sabha candidate." },
+            { id: 10, name: "Sanjay Seth", party: "Samajwadi Party", year: "2019", cases: "Real estate projects and disproportionate assets scrutiny.", mode: "Stalled Escalation Spin", action: "Joined the BJP; probes saw no further escalations." },
+            { id: 11, name: "K. Geeta", party: "YSRCP", year: "2019", cases: "CBI charges related to a Punjab National Bank loan default.", mode: "Trial Speed Defrost", action: "Joined BJP; cases effectively stalled in terms of trial speed." },
+            { id: 12, name: "C.M. Ramesh", party: "TDP", year: "2019", cases: "Income Tax raids and ED notices over alleged diversion of funds.", mode: "Pace Drop Quick Wash", action: "Crossed over to the BJP shortly after searches; probe pace dropped significantly." },
+            { id: 13, name: "Sujana Chowdary", party: "TDP", year: "2019", cases: "CBI/ED bank fraud cases involving ₹5,700 crore.", mode: "Physical Enforcement Halt", action: "Joined BJP; although ED retained attached assets, physical enforcement and arrests halted." },
+            { id: 14, name: "Hasan Mushrif", party: "NCP", year: "2023", cases: "ED probe for alleged money laundering in Sar Senapati Santaji Ghorpade Sugar Factory.", mode: "Sugar-Coated Rinse", action: "Joined NDA cabinet; ED raids and summons abruptly halted." },
+            { id: 15, name: "Narayan Rane", party: "Congress", year: "2019", cases: "Money laundering probe by ED related to Avighna Park estate.", mode: "Cabinet Level Cleanse", action: "Inducted into Union Cabinet; ED probe went completely dormant." },
+            { id: 16, name: "Pratap Sarnaik", party: "Shiv Sena", year: "2022", cases: "ED probe in ₹175-crore NSEL scam and MMRDA money laundering case.", mode: "Rebel Relief Wash", action: "Switched to Shinde faction; EOW filed closure report, effectively stalling ED case." },
+            { id: 17, name: "Jyotiraditya Scindia", party: "Congress", year: "2020", cases: "EOW probe into falsification of property documents in a land scam.", mode: "Royal Flush Spin", action: "EOW closed the probe shortly after he defected to BJP; made Union Minister." },
+            { id: 18, name: "Digambar Kamat", party: "Congress", year: "2022", cases: "ED and CBI probes in the Louis Berger bribery scam.", mode: "Coastal Clear Cycle", action: "Joined BJP; trial progress slowed down immensely with no further agency escalation." },
+            { id: 19, name: "Tapas Roy", party: "TMC", year: "2024", cases: "ED raids concerning the municipal recruitment scam in West Bengal.", mode: "Election Eve Quick Wash", action: "Defected to BJP shortly after ED raids; fielded as candidate with no further ED action." },
+            { id: 20, name: "Kripashankar Singh", party: "Congress", year: "2021", cases: "Disproportionate assets and money laundering cases by state and central agencies.", mode: "Discharge Delicate Cycle", action: "Joined BJP after being discharged in cases; fielded as BJP candidate in 2024." },
+            { id: 21, name: "Geeta Koda", party: "Congress", year: "2024", cases: "CBI probes linked to massive coal scam allegations.", mode: "Coal Stain Remover", action: "Joined BJP ahead of Lok Sabha polls; agency scrutiny minimized." },
+            { id: 22, name: "Ravindra Waikar", party: "Shiv Sena", year: "2024", cases: "Jogeshwari plot scam probe by ED and Mumbai Police EOW.", mode: "Quick Closure Cycle", action: "EOW filed a closure report shortly after he joined the Shinde faction; won Lok Sabha polls." },
+            { id: 23, name: "Nawab Malik", party: "NCP", year: "2023", cases: "ED money laundering case linked to underworld properties.", mode: "Medical Bail Defrost", action: "Granted medical bail; agency opposition softened after his faction allied with the NDA." },
+            { id: 24, name: "Mukul Roy", party: "TMC", year: "2017", cases: "CBI and ED investigations in the Saradha chit fund and Narada sting operations.", mode: "Narada Neutralizer", action: "Agency actions were effectively paused during his tenure in the BJP." },
+            { id: 25, name: "Capt Amarinder (Family)", party: "Congress", year: "2022", cases: "ED FEMA probes and income tax scrutiny against his son, Raninder Singh.", mode: "FEMA Fade Out", action: "Investigations went completely cold after his party merged with the BJP." }
+        ];
+
+        let selectedNeta = null;
+    let appState = 0; // 0 = Idle/Need Selection, 1 = Ready to Wash, 2 = Washing, 3 = Finished
+    let searchQuery = "";
+
+    const listContainer = document.getElementById('neta-list');
+    const mainBtn = document.getElementById('main-btn');
+    const machine = document.getElementById('washing-machine');
+    const machineStatus = document.getElementById('machine-status');
+    const statusLed = document.getElementById('status-led');
+    const netaInDrum = document.getElementById('neta-in-drum');
+    const resultsPanel = document.getElementById('results-panel');
+    const modal = document.getElementById('neta-modal');
+    const closeModalBtn = document.getElementById('close-modal');
+    const searchInput = document.getElementById('search-neta');
+    const shareAppBtn = document.getElementById('share-app-btn');
+    const shareResultBtn = document.getElementById('share-result-btn');
+    const toast = document.getElementById('toast');
+
+    // Share Functions
+    function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    function fallbackCopyTextToClipboard(text) {
+        var textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            var successful = document.execCommand('copy');
+            if (successful) showToast('Copied to clipboard!');
+            else showToast('Failed to copy');
+        } catch (err) {
+            showToast('Failed to copy');
+        }
+        document.body.removeChild(textArea);
+    }
+
+    function handleShare(title, text, url) {
+        if (navigator.share) {
+            navigator.share({ title, text, url })
+                .catch((err) => {
+                    if (err.name !== 'AbortError') console.error(err);
+                });
+        } else {
+            fallbackCopyTextToClipboard(text + " - " + url);
+        }
+    }
+
+    shareAppBtn.addEventListener('click', () => {
+        const baseUrl = window.location.origin + window.location.pathname;
+        handleShare(
+            'BJP Washing Machine',
+            'Check out the Interactive BJP Washing Machine to see how political stains vanish!',
+            baseUrl
+        );
+    });
+
+    shareResultBtn.addEventListener('click', () => {
+        if (!selectedNeta) return;
+        const shareUrl = new URL(window.location.origin + window.location.pathname);
+        shareUrl.searchParams.set('neta', selectedNeta.name);
+        handleShare(
+            'Washing Machine Result',
+            `Just washed ${selectedNeta.name} (Ex-${selectedNeta.party}) in the BJP Washing Machine! Wash Mode: ${selectedNeta.mode}. Result: ${selectedNeta.action}`,
+            shareUrl.toString()
+        );
+    });
+
+    // Search Listener
+    searchInput.addEventListener('input', (e) => {
+        searchQuery = e.target.value.toLowerCase();
+        renderList();
+    });
+
+    // Modal Controls
+    function openModal() {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        closeModalBtn.addEventListener('click', closeModal);
+
+        // Click outside to close modal
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Render List
+    function renderList() {
+        listContainer.innerHTML = '';
+        const filteredNetas = netas.filter(neta => 
+            neta.name.toLowerCase().includes(searchQuery) || 
+            neta.party.toLowerCase().includes(searchQuery) ||
+            neta.year.includes(searchQuery)
+        );
+
+        if (filteredNetas.length === 0) {
+            listContainer.innerHTML = '<div class="text-center text-slate-500 py-8 text-sm font-medium">No politicians found.</div>';
+            return;
+        }
+
+        filteredNetas.forEach(neta => {
+            const card = document.createElement('div');
+            card.className = `p-4 border-2 border-slate-100 rounded-xl cursor-pointer hover:bg-slate-50 transition-colors ${selectedNeta && selectedNeta.id === neta.id ? 'selected-card' : 'bg-white'}`;
+            card.onclick = () => selectNeta(neta);
+                
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="font-bold text-slate-800">${neta.name}</h3>
+                            <div class="flex gap-2 mt-1">
+                                <span class="text-[10px] uppercase font-bold tracking-wider bg-slate-100 text-slate-600 px-2 py-1 rounded">Ex-${neta.party}</span>
+                                <span class="text-[10px] uppercase font-bold tracking-wider bg-orange-100 text-orange-800 px-2 py-1 rounded">Switched: ${neta.year}</span>
+                            </div>
+                        </div>
+                        <div class="text-xl opacity-50">🧺</div>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        // Select Neta
+    function selectNeta(neta) {
+        selectedNeta = neta;
+        appState = 1;
+        renderList();
+        closeModal();
+        
+        // Update Machine UI
+        netaInDrum.textContent = neta.name.split(' ')[0]; // Show first name in drum
+        netaInDrum.style.opacity = '1';
+        
+        machineStatus.textContent = 'READY';
+        statusLed.className = 'led-indicator ready';
+        
+        // Update CTA Button
+        updateCTA();
+        
+        // Hide previous results
+        resultsPanel.classList.add('hidden');
+
+        // Automatically start the washing process
+        setTimeout(() => {
+            startWash();
+        }, 400);
+    }
+
+    // Main CTA Button Logic
+        mainBtn.addEventListener('click', () => {
+            if (appState === 0 || appState === 3) {
+                openModal();
+            } else if (appState === 1) {
+                startWash();
+            }
+        });
+
+        function updateCTA() {
+        const baseClasses = "w-[85%] mt-auto mb-5 text-white text-sm md:text-base font-bold py-2.5 px-4 rounded-xl transition-all transform flex items-center justify-center gap-2 z-10 ";
+        
+        if (appState === 0) {
+            mainBtn.innerHTML = `<span>🧺</span> Select Neta to Wash`;
+            mainBtn.className = baseClasses + 'bg-orange-500 hover:bg-orange-600 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:-translate-y-0.5';
+        } else if (appState === 1) {
+            mainBtn.innerHTML = `<span>▶️</span> Ready to Wash`;
+            mainBtn.className = baseClasses + 'bg-green-600 hover:bg-green-700 shadow-[0_4px_14px_0_rgba(22,163,74,0.39)] hover:-translate-y-0.5';
+        } else if (appState === 2) {
+            mainBtn.innerHTML = `<span>🔄</span> Washing...`;
+                mainBtn.className = baseClasses + 'bg-slate-400 shadow-inner cursor-not-allowed';
+            } else if (appState === 3) {
+                mainBtn.innerHTML = `<span>🧺</span> Wash Another`;
+                mainBtn.className = baseClasses + 'bg-orange-500 hover:bg-orange-600 shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:-translate-y-0.5';
+            }
+        }
+
+        // Start Wash
+        function startWash() {
+            if (!selectedNeta || appState === 2) return;
+            
+            appState = 2;
+            updateCTA();
+            
+            machineStatus.textContent = 'WASHING';
+            statusLed.className = 'led-indicator active';
+            machine.classList.add('is-washing');
+            resultsPanel.classList.add('hidden');
+
+            // Simulate Wash Cycle (3.5 seconds)
+            setTimeout(() => {
+                appState = 3;
+                machine.classList.remove('is-washing');
+                machineStatus.textContent = 'CLEAN';
+                statusLed.className = 'led-indicator ready'; 
+                netaInDrum.textContent = '✨';
+                
+                updateCTA();
+                showResults();
+                
+            }, 3500);
+        }
+
+        // Show Results
+        function showResults() {
+            if (!selectedNeta) return;
+            
+            document.getElementById('res-name').textContent = selectedNeta.name;
+            document.getElementById('res-party').textContent = selectedNeta.party;
+            document.getElementById('res-year').textContent = selectedNeta.year;
+            document.getElementById('res-charges').textContent = selectedNeta.cases;
+            document.getElementById('res-mode').textContent = selectedNeta.mode;
+            document.getElementById('res-action').textContent = selectedNeta.action;
+            
+            resultsPanel.classList.remove('hidden');
+            
+            // Scroll down gently to results
+            setTimeout(() => {
+                resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // Initial Render
+        renderList();
+        updateCTA();
+
+        // Check for Shared Neta in URL query string on load
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedNetaName = urlParams.get('neta');
+        if (sharedNetaName) {
+            const netaToWash = netas.find(n => n.name.toLowerCase() === sharedNetaName.toLowerCase());
+            if (netaToWash) {
+                // Slight delay so the user can see the machine before the cycle auto-starts
+                setTimeout(() => {
+                    selectNeta(netaToWash);
+                }, 600);
+            }
+        }
+    </script>
+</body>
+</html>
